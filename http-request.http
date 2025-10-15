@@ -1,4 +1,11 @@
 ###
-GET http://localhost:8080/api/documents/ff36268c-11ad-46f7-8402-fcf4755f0633
+GET http://localhost:8080/api/documents/5b4f850c-2969-4d89-8901-3c4173bf9a73
 Content-Type: application/json
 X-Tenant-ID: default
+
+
+
+### a972db77-b0c7-4404-9c22-0123261f5708 -- PDF
+### b9192f4a-7070-4784-93d6-a532cf7387bd -- word
+### dc4382fe-cebb-4a25-93f7-4c674b64fd79 -- excel
+### 5b4f850c-2969-4d89-8901-3c4173bf9a73 -- OCR

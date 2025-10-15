@@ -106,6 +106,12 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+      <version>3.5.6</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
       <version>2.19.2</version>
@@ -140,10 +146,6 @@
         <exclusion>
           <artifactId>json-path</artifactId>
           <groupId>com.jayway.jsonpath</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>jakarta.xml.bind-api</artifactId>
-          <groupId>jakarta.xml.bind</groupId>
         </exclusion>
         <exclusion>
           <artifactId>json-smart</artifactId>
@@ -187,9 +189,36 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>org.apache.tika</groupId>
+      <artifactId>tika-core</artifactId>
+      <version>2.9.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tika</groupId>
+      <artifactId>tika-parsers-standard-package</artifactId>
+      <version>2.9.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.pdfbox</groupId>
+      <artifactId>pdfbox</artifactId>
+      <version>2.0.29</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.sourceforge.tess4j</groupId>
+      <artifactId>tess4j</artifactId>
+      <version>5.16.0</version>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
   <properties>
     <http-client>5.4.1</http-client>
+    <pdfbox.version>2.0.29</pdfbox.version>
+    <tika.version>2.9.1</tika.version>
     <java.version>17</java.version>
+    <tess4j.version>5.16.0</tess4j.version>
   </properties>
 </project>

@@ -15,3 +15,23 @@ rest-template:
     default-content-type: "application/json"  # Previously hardcoded in tavilyClient
   logging:
     enabled: true  # Enable compression and connection pool logging
+
+conversion:
+  ocr:
+    languages: "eng+spa"  # Support both English and Spanish
+    enabled: true
+    confidence-threshold: 60
+    page-segmentation-mode: 1  # Automatic page segmentation with OSD
+  tika:
+    enabled: true
+    max-string-length: 100000  # Maximum text length to extract
+    timeout-seconds: 30
+  pdfbox:
+    enabled: true
+    dpi: 300  # DPI for image extraction from PDF
+    image-type: "png"
+  file:
+    max-size-mb: 4  # Maximum file size for processing
+    temp-dir: "/tmp/conversion"  # Temporary directory for file processing
+  logging:
+    enabled: true  # Enable conversion process logging

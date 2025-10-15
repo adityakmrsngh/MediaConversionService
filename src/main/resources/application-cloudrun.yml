@@ -1,0 +1,45 @@
+# Cloud Run specific configuration
+# This profile is activated when SPRING_PROFILES_ACTIVE=cloudrun
+
+server:
+  port: ${PORT:8080}  # Cloud Run sets PORT environment variable
+  shutdown: graceful
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 10
+    connection-timeout: 20000
+    keep-alive-timeout: 15000
+
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+  application:
+    name: MediaConversionService
+
+# Logging configuration for Cloud Run (structured logging)
+logging:
+  level:
+    org.zendly.mediaconversionservice: INFO
+    org.apache.tika: WARN
+    org.apache.pdfbox: WARN
+    net.sourceforge.tess4j: WARN
+  pattern:
+    console: '{"timestamp":"%d{yyyy-MM-dd HH:mm:ss.SSS}","level":"%level","thread":"%thread","logger":"%logger{36}","message":"%msg","traceId":"%X{traceId:-}","spanId":"%X{spanId:-}"}%n'
+
+# Management endpoints for health checks
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
