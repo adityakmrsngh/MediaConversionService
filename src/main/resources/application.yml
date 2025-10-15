@@ -1,0 +1,17 @@
+rest-template:
+  connection-pool:
+    max-total: 40
+    max-per-route: 20
+    idle-connection-timeout-seconds: 30  # Previously hardcoded in RestTemplateConfig
+    validate-after-inactivity-seconds: 1  # For future use, previously commented out
+  timeout:
+    connection: 10000
+    read: 120000
+    connection-request: 5000
+  compression:
+    enabled: true  # Enable gzip compression for large payloads
+    min-request-size: 1024  # Only compress requests larger than 1KB
+  headers:
+    default-content-type: "application/json"  # Previously hardcoded in tavilyClient
+  logging:
+    enabled: true  # Enable compression and connection pool logging
