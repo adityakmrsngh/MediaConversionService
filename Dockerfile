@@ -47,7 +47,7 @@ RUN addgroup -g 1001 -S appuser && \
 RUN mkdir -p /tmp/conversion && chown -R appuser:appuser /tmp/conversion
 
 # Copy the built JAR from builder stage
-COPY --from=builder /app/target/*.jar app.jar
+COPY --from=builder /app/target/MediaConversionService-0.0.1-SNAPSHOT.jar app.jar
 
 # Change ownership of the app directory
 RUN chown -R appuser:appuser /app
