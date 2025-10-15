@@ -102,13 +102,12 @@ brew install tesseract-lang
 ```
 
 #### For Docker Deployment
-The Dockerfile automatically installs Tesseract and required language packs:
+The Dockerfile automatically installs Tesseract and required language packs using Eclipse Temurin Alpine:
 ```dockerfile
-# Tesseract installation included in Docker image
-RUN apt-get update && \
-    apt-get install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-spa curl && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Tesseract installation included in Docker image (Alpine Linux)
+RUN apk update && \
+    apk add --no-cache tesseract-ocr tesseract-ocr-data-eng tesseract-ocr-data-spa curl && \
+    rm -rf /var/cache/apk/*
 ```
 
 ### Version Compatibility Notes
@@ -192,10 +191,13 @@ The service provides comprehensive error handling with appropriate HTTP status c
 The service uses Tess4J 5.16.0 which includes native Tesseract binaries but requires language data files. For English + Spanish support, ensure the container has access to the appropriate traineddata files.
 
 ### Memory Considerations
-OCR operations are memory-intensive. Cloud Run deployment is configured with:
-- **JVM Settings**: `-Xmx512m -Xms256m -XX:+UseG1GC`
-- **Reduced DPI**: 200 DPI for faster processing
-- **Connection Pool**: Optimized for Cloud Run constraints
+OCR operations are memory-intensive. For 1 core, 2GB RAM deployment:
+- **JVM Settings**: `-Xmx1536m -Xms512m -XX:+UseSerialGC -XX:MaxRAMPercentage=75.0`
+- **Serial GC**: Optimized for single-core environments
+- **Memory Allocation**: 75% of available RAM (1.5GB out of 2GB)
+- **String Optimization**: `-XX:+UseStringDeduplication -XX:+OptimizeStringConcat`
+- **Headless Mode**: `-Djava.awt.headless=true` for image processing
+- **Reduced DPI**: 300 DPI balanced for quality vs performance
 
 ### Security
 - **Non-root user** in Docker container
