@@ -23,17 +23,10 @@ import java.util.Set;
 public class DocumentConversionService {
 
     private final TikaTextExtractor tikaTextExtractor;
-    private final PdfOcrService pdfOcrService;
     private final AudioConversionService audioConversionService;
     private final ImageConversionService imageConversionService;
 
-    @Value("${conversion.tika.enabled}")
-    private boolean tikaEnabled;
-    
-    @Value("${conversion.ocr.enabled}")
-    private boolean ocrEnabled;
-    
-    @Value("${conversion.file.max-size-mb}")
+    @Value("${tika.file.max-size-mb}")
     private int maxFileSizeMb;
     
     @Value("${conversion.logging.enabled}")
@@ -69,11 +62,9 @@ public class DocumentConversionService {
     );
 
     public DocumentConversionService(TikaTextExtractor tikaTextExtractor,
-                                   PdfOcrService pdfOcrService,
                                    AudioConversionService audioConversionService,
                                    ImageConversionService imageConversionService) {
         this.tikaTextExtractor = tikaTextExtractor;
-        this.pdfOcrService = pdfOcrService;
         this.audioConversionService = audioConversionService;
         this.imageConversionService = imageConversionService;
     }
@@ -117,7 +108,7 @@ public class DocumentConversionService {
     }
 
     /**
-     * Convert document type files using Tika first, then OCR fallback for PDFs
+     * Convert document type files using Tika 3.0 with built-in OCR support
      */
     private ConversionResponse convertDocumentType(DocumentResponse documentResponse, long startTime) {
         String mimeType = documentResponse.getMimeType();
@@ -129,60 +120,29 @@ public class DocumentConversionService {
 
         try (InputStream inputStream = new URL(documentResponse.getDownloadUrl()).openStream()) {
             
-            // Step 1: Try Apache Tika first
-            if (tikaEnabled) {
-                ConversionResponse tikaResponse = tikaTextExtractor.extractText(inputStream, documentResponse);
-                
-                // Check if Tika extraction was successful and has meaningful content
-                if (ApplicationConstants.CONVERSION_SUCCESS.equals(tikaResponse.getStatus()) && 
-                    hasSignificantContent(tikaResponse.getExtractedText())) {
-                    if (loggingEnabled) {
-                        log.info("Tika extraction successful for document: {}", documentResponse.getDocumentId());
-                    }
-                    return tikaResponse;
-                }
-            }
-
-            // Step 2: For PDFs with empty/minimal text, try OCR fallback
-            if (ApplicationConstants.MIME_TYPE_PDF.equals(mimeType) && ocrEnabled) {
+            // Use Tika 3.0 with built-in OCR support
+            ConversionResponse tikaResponse = tikaTextExtractor.extractText(inputStream, documentResponse);
+            
+            // Check if Tika extraction was successful
+            if (ApplicationConstants.CONVERSION_SUCCESS.equals(tikaResponse.getStatus())) {
                 if (loggingEnabled) {
-                    log.info("Falling back to OCR for document: {}", documentResponse.getDocumentId());
+                    log.info("Tika 3.0 extraction successful for document: {} - Text length: {}, OCR used: {}", 
+                            documentResponse.getDocumentId(), 
+                            tikaResponse.getExtractedText().length(),
+                            tikaResponse.getMetadata() != null ? tikaResponse.getMetadata().getUsedOcrFallback() : false);
                 }
-                
-                // Reopen stream for OCR processing
-                try (InputStream ocrInputStream = new URL(documentResponse.getDownloadUrl()).openStream()) {
-                    ConversionResponse ocrResponse = pdfOcrService.extractTextWithOcr(ocrInputStream, documentResponse);
-                    
-                    // Mark that OCR fallback was used
-                    if (ocrResponse.getMetadata() != null) {
-                        ocrResponse.getMetadata().setUsedOcrFallback(true);
-                    }
-                    
-                    return ocrResponse;
-                }
+                return tikaResponse;
+            } else {
+                // Tika extraction failed
+                return buildErrorResponse(documentResponse.getDocumentId(), 
+                        "Tika extraction failed: " + tikaResponse.getErrorMessage(), startTime);
             }
-
-            // If we reach here, no successful conversion was possible
-            return buildErrorResponse(documentResponse.getDocumentId(), 
-                    ApplicationConstants.ERROR_EMPTY_CONTENT, startTime);
 
         } catch (IOException e) {
             log.error("Error downloading document {}: {}", documentResponse.getDocumentId(), e.getMessage());
             return buildErrorResponse(documentResponse.getDocumentId(), 
                     ApplicationConstants.ERROR_FILE_NOT_FOUND, startTime);
         }
-    }
-
-    /**
-     * Check if extracted text has significant content (not just whitespace or minimal text)
-     */
-    private boolean hasSignificantContent(String text) {
-        if (text == null || text.trim().isEmpty()) {
-            return false;
-        }
-        // Consider text significant if it has more than 10 non-whitespace characters
-        String cleanText = text.replaceAll("\\s+", "");
-        return cleanText.length() > 10;
     }
 
     /**

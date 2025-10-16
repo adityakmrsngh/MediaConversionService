@@ -16,22 +16,38 @@ rest-template:
   logging:
     enabled: true  # Enable compression and connection pool logging
 
-conversion:
+# Tika OCR Configuration
+tika:
   ocr:
-    languages: "eng+spa"  # Support both English and Spanish
     enabled: true
-    confidence-threshold: 60
+    language: "eng+spa"  # Support both English and Spanish
+    confidence-threshold: 70
     page-segmentation-mode: 1  # Automatic page segmentation with OSD
-  tika:
-    enabled: true
-    max-string-length: 100000  # Maximum text length to extract
-    timeout-seconds: 30
-  pdfbox:
-    enabled: true
-    dpi: 300  # DPI for image extraction from PDF
-    image-type: "png"
+    timeout-seconds: 120
+    max-file-size-mb: 5  # Maximum file size for OCR processing
+    enable-image-preprocessing: true
+    render-dpi: 300
+    ocr-strategy: "OCR_AND_TEXT_EXTRACTION"
+    extract-inline-images: true
+    write-limit: 100000
   file:
-    max-size-mb: 4  # Maximum file size for processing
+    max-size-mb: 5  # Maximum file size for processing
     temp-dir: "/tmp/conversion"  # Temporary directory for file processing
+
+# Google Vision API Configuration
+google:
+  vision:
+    enabled: true
+    confidence-threshold: 85  # Use Google Vision if Tika confidence < 85%
+    project-id: ${GOOGLE_CLOUD_PROJECT_ID:}
+    credentials-path: ${GOOGLE_APPLICATION_CREDENTIALS:}
+    max-file-size-mb: 5
+    timeout-seconds: 30
+    language-hints: ["en", "es"]
+    enable-text-detection: true
+    enable-document-text-detection: true
+
+# Legacy conversion settings (for backward compatibility)
+conversion:
   logging:
     enabled: true  # Enable conversion process logging

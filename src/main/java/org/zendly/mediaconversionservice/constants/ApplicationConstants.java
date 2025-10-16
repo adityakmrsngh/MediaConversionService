@@ -37,6 +37,7 @@ public class ApplicationConstants {
     // Conversion methods
     public static final String METHOD_TIKA = "APACHE_TIKA";
     public static final String METHOD_OCR = "PDFBOX_TESS4J_OCR";
+    public static final String METHOD_GOOGLE_VISION = "GOOGLE_VISION_API";
     public static final String METHOD_AUDIO_STT = "GOOGLE_SPEECH_TO_TEXT";
     public static final String METHOD_IMAGE_VISION = "GOOGLE_VISION_API";
     

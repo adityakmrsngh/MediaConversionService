@@ -17,9 +17,8 @@
     <properties>
         <java.version>17</java.version>
         <http-client>5.4.1</http-client>
-        <tess4j.version>5.16.0</tess4j.version>
-        <tika.version>2.9.1</tika.version>
-        <pdfbox.version>2.0.29</pdfbox.version>
+        <tika.version>3.2.3</tika.version>
+        <google-cloud-vision.version>3.47.0</google-cloud-vision.version>
     </properties>
     <dependencies>
         <dependency>
@@ -61,7 +60,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Apache Tika for document text extraction -->
+        <!-- Apache Tika 3.0 with built-in OCR support -->
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-core</artifactId>
@@ -73,18 +72,20 @@
             <version>${tika.version}</version>
         </dependency>
 
-        <!-- PDFBox for PDF processing -->
+        <!-- Google Cloud Vision API for fallback OCR - Temporarily disabled for testing -->
+        <!--
         <dependency>
-            <groupId>org.apache.pdfbox</groupId>
-            <artifactId>pdfbox</artifactId>
-            <version>${pdfbox.version}</version>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-vision</artifactId>
+            <version>${google-cloud-vision.version}</version>
         </dependency>
+        -->
 
-        <!-- Tess4J for OCR -->
+        <!-- Spring Boot Configuration Processor for type-safe configuration -->
         <dependency>
-            <groupId>net.sourceforge.tess4j</groupId>
-            <artifactId>tess4j</artifactId>
-            <version>${tess4j.version}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 

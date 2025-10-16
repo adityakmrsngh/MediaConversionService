@@ -1,132 +1,111 @@
 package org.zendly.mediaconversionservice.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.zendly.mediaconversionservice.constants.ApplicationConstants;
 import org.zendly.mediaconversionservice.dto.ConversionMetadata;
 import org.zendly.mediaconversionservice.dto.ConversionResponse;
 import org.zendly.mediaconversionservice.dto.DocumentResponse;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Set;
+
 /**
- * Stub service for image text extraction using Google Vision API
- * This is a placeholder implementation ready for future Google Cloud integration
+ * Service for converting images to text using Tika OCR
+ * Google Vision fallback can be added later when dependency is resolved
  */
 @Slf4j
 @Service
 public class ImageConversionService {
 
-    @Value("${conversion.logging.enabled}")
-    private boolean loggingEnabled;
+    private final TikaTextExtractor tikaTextExtractor;
+
+    // Supported image MIME types
+    private static final Set<String> SUPPORTED_IMAGE_TYPES = Set.of(
+            ApplicationConstants.MIME_TYPE_JPEG,
+            ApplicationConstants.MIME_TYPE_PNG,
+            ApplicationConstants.MIME_TYPE_TIFF,
+            ApplicationConstants.MIME_TYPE_BMP
+    );
+
+    public ImageConversionService(TikaTextExtractor tikaTextExtractor) {
+        this.tikaTextExtractor = tikaTextExtractor;
+    }
 
     /**
-     * Extract text from images using Google Vision API OCR
-     * Currently returns a stub response - ready for Google Cloud Vision integration
+     * Convert image to text using Tika OCR
      */
     public ConversionResponse convertImage(DocumentResponse documentResponse) {
         long startTime = System.currentTimeMillis();
         
-        if (loggingEnabled) {
-            log.info("Image conversion requested for document: {} with MIME type: {}", 
-                    documentResponse.getDocumentId(), documentResponse.getMimeType());
+        log.info("Starting image conversion for document: {} with MIME type: {}", 
+                documentResponse.getDocumentId(), documentResponse.getMimeType());
+
+        // Validate image format
+        if (!isSupportedImageFormat(documentResponse.getMimeType())) {
+            return buildErrorResponse(documentResponse.getDocumentId(), 
+                    "Unsupported image format: " + documentResponse.getMimeType(), startTime);
         }
 
-        // TODO: Implement Google Vision API integration
-        // Steps for future implementation:
-        // 1. Download image file from documentResponse.getDownloadUrl()
-        // 2. Configure Google Cloud Vision client
-        // 3. Prepare image for Vision API:
-        //    - Convert to supported format if needed
-        //    - Optimize image size/resolution
-        //    - Handle different image formats (JPEG, PNG, TIFF, BMP)
-        // 4. Call Vision API with TEXT_DETECTION or DOCUMENT_TEXT_DETECTION:
-        //    - TEXT_DETECTION: For sparse text in images
-        //    - DOCUMENT_TEXT_DETECTION: For dense text documents
-        // 5. Process the OCR response:
-        //    - Extract text annotations
-        //    - Get confidence scores
-        //    - Detect language
-        //    - Handle text blocks and paragraphs
-        // 6. Return structured text output with metadata
+        try {
+            // Use Tika OCR for image text extraction
+            ConversionResponse tikaResponse = extractWithTika(documentResponse);
+            
+            if (ApplicationConstants.CONVERSION_SUCCESS.equals(tikaResponse.getStatus())) {
+                int tikaConfidence = tikaResponse.getMetadata() != null ? 
+                        tikaResponse.getMetadata().getOcrConfidence() : 0;
+                
+                log.info("Tika OCR completed for image: {} - Text length: {}, Confidence: {}", 
+                        documentResponse.getDocumentId(), 
+                        tikaResponse.getExtractedText().length(), 
+                        tikaConfidence);
 
-        // Build conversion metadata for stub response
-        ConversionMetadata conversionMetadata = ConversionMetadata.builder()
-                .originalFileName(documentResponse.getOriginalFileName())
-                .mimeType(documentResponse.getMimeType())
-                .documentType(documentResponse.getDocumentType())
-                .language("auto-detect") // Future: actual detected language
-                .ocrConfidence(null) // Future: actual confidence from Vision API
-                .processingNotes("Stub implementation - Google Vision API integration pending")
-                .build();
+                return tikaResponse;
+            } else {
+                log.error("Tika OCR failed for document: {}", documentResponse.getDocumentId());
+                return tikaResponse;
+            }
 
-        // Return stub response indicating the service is not yet implemented
-        return ConversionResponse.builder()
-                .documentId(documentResponse.getDocumentId())
-                .extractedText("Image text extraction not yet implemented. This service is ready for Google Vision API integration.")
-                .status(ApplicationConstants.CONVERSION_NOT_SUPPORTED)
-                .conversionMethod(ApplicationConstants.METHOD_IMAGE_VISION)
-                .metadata(conversionMetadata)
-                .processingTimeMs(System.currentTimeMillis() - startTime)
-                .build();
+        } catch (Exception e) {
+            log.error("Error during image conversion for document {}: {}", 
+                    documentResponse.getDocumentId(), e.getMessage(), e);
+            return buildErrorResponse(documentResponse.getDocumentId(), 
+                    "Image conversion failed: " + e.getMessage(), startTime);
+        }
+    }
+
+    /**
+     * Extract text using Tika OCR
+     */
+    private ConversionResponse extractWithTika(DocumentResponse documentResponse) {
+        try (InputStream inputStream = new URL(documentResponse.getDownloadUrl()).openStream()) {
+            return tikaTextExtractor.extractText(inputStream, documentResponse);
+        } catch (IOException e) {
+            log.error("Error downloading image for Tika OCR: {}", e.getMessage());
+            return buildErrorResponse(documentResponse.getDocumentId(), 
+                    "Failed to download image for Tika OCR: " + e.getMessage(), System.currentTimeMillis());
+        }
     }
 
     /**
      * Check if image format is supported
-     * Future implementation should validate against Google Vision API supported formats
      */
     private boolean isSupportedImageFormat(String mimeType) {
-        return switch (mimeType) {
-            case ApplicationConstants.MIME_TYPE_JPEG,
-                 ApplicationConstants.MIME_TYPE_PNG,
-                 ApplicationConstants.MIME_TYPE_TIFF,
-                 ApplicationConstants.MIME_TYPE_BMP -> true;
-            default -> false;
-        };
+        return SUPPORTED_IMAGE_TYPES.contains(mimeType);
     }
 
     /**
-     * Future method to configure Google Vision API client
+     * Build error response for image conversion failures
      */
-    private void configureGoogleVisionClient() {
-        // TODO: Configure Google Cloud Vision client
-        // - Set up authentication (service account key or default credentials)
-        // - Configure detection features (TEXT_DETECTION vs DOCUMENT_TEXT_DETECTION)
-        // - Set language hints if needed
-        // - Configure image context for better accuracy
-    }
-
-    /**
-     * Future method to optimize image for Vision API
-     */
-    private void optimizeImageForVision(String imageUrl) {
-        // TODO: Optimize image for better OCR results
-        // - Resize if too large (Vision API has size limits)
-        // - Convert format if needed
-        // - Enhance image quality if required
-        // - Handle image orientation
-    }
-
-    /**
-     * Future method to process Vision API response
-     */
-    private String processVisionApiResponse(Object visionResponse) {
-        // TODO: Process Google Vision API response
-        // - Extract text from TextAnnotation objects
-        // - Handle text blocks and paragraphs
-        // - Preserve text structure and formatting
-        // - Calculate confidence scores
-        // - Detect and handle multiple languages
-        return "";
-    }
-
-    /**
-     * Future method to detect optimal Vision API feature
-     */
-    private String determineVisionFeature(String mimeType, String fileName) {
-        // TODO: Determine best Vision API feature based on image type
-        // - TEXT_DETECTION: For photos with sparse text (signs, labels, etc.)
-        // - DOCUMENT_TEXT_DETECTION: For scanned documents, PDFs converted to images
-        // - Consider image characteristics and use case
-        return "DOCUMENT_TEXT_DETECTION"; // Default for document-like images
+    private ConversionResponse buildErrorResponse(String documentId, String errorMessage, long startTime) {
+        return ConversionResponse.builder()
+                .documentId(documentId)
+                .status(ApplicationConstants.CONVERSION_FAILED)
+                .conversionMethod(ApplicationConstants.METHOD_IMAGE_VISION)
+                .errorMessage(errorMessage)
+                .processingTimeMs(System.currentTimeMillis() - startTime)
+                .build();
     }
 }
