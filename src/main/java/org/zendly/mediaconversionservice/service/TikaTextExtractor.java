@@ -27,17 +27,16 @@ public class TikaTextExtractor {
     private int ocrConfidenceThreshold;
     @Value("${tika.ocr.language}")
     private String ocrLanguage;
+    @Value("${tika.ocr.write-limit}")
+    private int writeLimit;
 
     private final AutoDetectParser autoDetectParser;
     private final ParseContext parseContext;
-    private final BodyContentHandler bodyContentHandler;
 
     public TikaTextExtractor(AutoDetectParser autoDetectParser,
-                             ParseContext parseContext,
-                             BodyContentHandler bodyContentHandler) {
+                             ParseContext parseContext) {
         this.autoDetectParser = autoDetectParser;
         this.parseContext = parseContext;
-        this.bodyContentHandler = bodyContentHandler;
     }
 
     /**
@@ -51,7 +50,7 @@ public class TikaTextExtractor {
         try {
             // Use Tika with metadata extraction and OCR configuration
             Metadata metadata = new Metadata();
-
+            BodyContentHandler bodyContentHandler = new BodyContentHandler(writeLimit);
             // Parse document with OCR-enabled context
             autoDetectParser.parse(inputStream, bodyContentHandler, metadata, parseContext);
             String extractedText = bodyContentHandler.toString();

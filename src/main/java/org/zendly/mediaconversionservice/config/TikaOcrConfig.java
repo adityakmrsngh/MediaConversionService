@@ -70,7 +70,7 @@ public class TikaOcrConfig {
      */
     private boolean extractInlineImages = true;
 
-    private Integer writeLimit = 100000;
+    private int writeLimit = 100000;
 
     @Bean
     public AutoDetectParser getAutoDetectParser() {
@@ -133,10 +133,5 @@ public class TikaOcrConfig {
         config.setOcrDPI(getRenderDpi());
 
         return config;
-    }
-
-    @Bean
-    public BodyContentHandler getBodyContentHandler() {
-        return new BodyContentHandler(getWriteLimit()); // 100KB limit
     }
 }
