@@ -51,3 +51,12 @@ google:
 conversion:
   logging:
     enabled: true  # Enable conversion process logging
+
+# Tenant caching configuration
+tenant:
+  cache:
+    enabled: true
+    ttl-minutes: 30
+    max-size: 1000
+    refresh-ahead-factor: 0.8
+

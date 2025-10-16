@@ -30,16 +30,6 @@ public class ConversionMetadata {
     private DocumentType documentType;
     
     /**
-     * File size in bytes
-     */
-    private Long fileSizeBytes;
-    
-    /**
-     * Number of pages processed (for documents)
-     */
-    private Integer pageCount;
-    
-    /**
      * OCR confidence score (0-100) if OCR was used
      */
     private Integer ocrConfidence;

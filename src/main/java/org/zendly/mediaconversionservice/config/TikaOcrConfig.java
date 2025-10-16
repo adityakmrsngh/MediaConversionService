@@ -77,7 +77,7 @@ public class TikaOcrConfig {
         return new AutoDetectParser();
     }
 
-    @Bean
+    @Bean("parseContext")
     public ParseContext createParseContext(PDFParserConfig pdfParserConfig,
                                            TesseractOCRConfig tesseractOCRConfig) {
         ParseContext context = new ParseContext();
@@ -133,5 +133,25 @@ public class TikaOcrConfig {
         config.setOcrDPI(getRenderDpi());
 
         return config;
+    }
+
+    /**
+     * Create text-only ParseContext (OCR disabled) for text-based documents
+     */
+    @Bean("textOnlyParseContext")
+    public ParseContext textOnlyParseContext() {
+        ParseContext context = new ParseContext();
+        
+        // Disable OCR for text-only processing
+        TesseractOCRConfig ocrConfig = new TesseractOCRConfig();
+        ocrConfig.setSkipOcr(true);
+        context.set(TesseractOCRConfig.class, ocrConfig);
+        
+        // Set PDF to text-only mode
+        PDFParserConfig pdfConfig = new PDFParserConfig();
+        pdfConfig.setOcrStrategy(PDFParserConfig.OCR_STRATEGY.NO_OCR);
+        context.set(PDFParserConfig.class, pdfConfig);
+        
+        return context;
     }
 }

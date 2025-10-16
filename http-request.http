@@ -1,5 +1,5 @@
 ###
-GET http://localhost:8080/api/documents/5b4f850c-2969-4d89-8901-3c4173bf9a73
+GET http://localhost:8080/api/documents/a972db77-b0c7-4404-9c22-0123261f5708
 Content-Type: application/json
 X-Tenant-ID: default
 

@@ -52,11 +52,9 @@ public class DocumentConverterController {
         try {
             // Step 1: Get document metadata from workflow orchestrator
             DocumentResponse documentResponse = workflowOrchestratorService.getDocument(documentId);
-            
             if (documentResponse == null) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Document not found: " + documentId);
             }
-
             log.info("Document metadata retrieved - ID: {}, Type: {}, MIME: {}", 
                     documentId, documentResponse.getDocumentType(), documentResponse.getMimeType());
 

@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.zendly.mediaconversionservice.dto.TenantResponse;
 import org.zendly.mediaconversionservice.service.WorkflowOrchestratorService;
@@ -37,13 +38,16 @@ public class TenantResolver {
 
     /**
      * Resolve tenant context by tenant ID (internal method)
+     * Uses caching to reduce API calls to WorkflowOrchestratorService
      * @param tenantId the tenant identifier
      * @return tenant context if resolved successfully, null otherwise
      */
-    private TenantContext resolveTenantContext(final String tenantId) {
+    @Cacheable(value = "tenantCache", key = "#tenantId", unless = "#result == null")
+    public TenantContext resolveTenantContext(final String tenantId) {
         try {
+            log.debug("Fetching tenant context from API for: {}", tenantId);
             TenantResponse tenant = workflowOrchestratorService.getTenantById(tenantId);
-            log.debug("Resolved tenant context: {}", tenantId);
+            log.debug("Resolved tenant context from API: {}", tenantId);
             return new TenantContext(
                 tenant.getTenantId(),
                 tenant.getDbName(),

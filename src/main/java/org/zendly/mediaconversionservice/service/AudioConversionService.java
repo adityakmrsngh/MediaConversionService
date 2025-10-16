@@ -77,26 +77,4 @@ public class AudioConversionService {
             default -> false;
         };
     }
-
-    /**
-     * Future method to configure Google Speech-to-Text client
-     */
-    private void configureGoogleSttClient() {
-        // TODO: Configure Google Cloud Speech-to-Text client
-        // - Set up authentication (service account key or default credentials)
-        // - Configure recognition settings
-        // - Set language preferences
-        // - Configure audio encoding settings
-    }
-
-    /**
-     * Future method to detect audio properties
-     */
-    private void detectAudioProperties(String audioUrl) {
-        // TODO: Detect audio properties for optimal STT configuration
-        // - Sample rate
-        // - Audio encoding
-        // - Duration
-        // - Number of channels
-    }
 }
