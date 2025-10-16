@@ -22,11 +22,6 @@ import java.net.URL;
 /**
  * Optimized service for extracting text from documents using Apache Tika with smart processing
  * Always enabled features:
- * - MIME-type based processing strategy (avoids unnecessary OCR)
- * - Smart PDF content analysis
- * - Google Vision fallback for low OCR confidence
- * - Simplified metadata processing
- * - Singleton bean usage for optimal performance
  */
 @Slf4j
 @Service
