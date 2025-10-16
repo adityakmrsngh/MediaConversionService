@@ -43,18 +43,15 @@ public class TikaTextExtractor {
     private final ParseContext ocrEnabledContext;
     private final ParseContext textOnlyParseContext;
     private final DocumentProcessingStrategy processingStrategy;
-    private final GoogleVisionService googleVisionService;
 
     public TikaTextExtractor(AutoDetectParser autoDetectParser,
                              @Qualifier("parseContext") ParseContext createParseContext,
                              @Qualifier("textOnlyParseContext") ParseContext textOnlyParseContext,
-                             DocumentProcessingStrategy processingStrategy,
-                             GoogleVisionService googleVisionService) {
+                             DocumentProcessingStrategy processingStrategy) {
         this.autoDetectParser = autoDetectParser;
         this.ocrEnabledContext = createParseContext;
         this.textOnlyParseContext = textOnlyParseContext;
         this.processingStrategy = processingStrategy;
-        this.googleVisionService = googleVisionService;
     }
 
     /**
@@ -99,10 +96,10 @@ public class TikaTextExtractor {
             ConversionResponse response = switch (strategy) {
                 case ApplicationConstants.PROCESSING_TEXT_ONLY ->
                     extractTextOnly(inputStream, documentResponse, startTime);
-                case ApplicationConstants.PROCESSING_OCR_WITH_VISION_FALLBACK ->
-                    extractWithOcrAndVisionFallback(inputStream, documentResponse, startTime);
+                case ApplicationConstants.PROCESSING_OCR ->
+                    extractWithOcr(inputStream, documentResponse, startTime);
                 default ->
-                    extractTextOnly(inputStream, documentResponse, startTime); // Safe default
+                    throw new IllegalArgumentException("Unsupported processing strategy: " + strategy);
             };
 
             log.info("Extraction completed for document: {} - Text length: {}, Processing time: {}ms",
@@ -154,7 +151,7 @@ public class TikaTextExtractor {
      * Extract with OCR and Google Vision fallback for images and image-based PDFs
      * Always tries Google Vision if Tika OCR confidence is below threshold
      */
-    private ConversionResponse extractWithOcrAndVisionFallback(InputStream inputStream, DocumentResponse documentResponse, long startTime)
+    private ConversionResponse extractWithOcr(InputStream inputStream, DocumentResponse documentResponse, long startTime)
             throws IOException, SAXException, TikaException {
 
         Metadata metadata = new Metadata();
@@ -163,29 +160,9 @@ public class TikaTextExtractor {
         // Try Tika OCR first
         autoDetectParser.parse(inputStream, handler, metadata, ocrEnabledContext);
         String extractedText = handler.toString();
-        int tikaConfidence = calculateSimpleConfidence(extractedText);
-
-        // Always check for Google Vision fallback if confidence is low
-        if (tikaConfidence < googleVisionThreshold) {
-            log.info("Tika OCR confidence {} below threshold {}, trying Google Vision fallback",
-                    tikaConfidence, googleVisionThreshold);
-
-            try {
-                ConversionResponse visionResponse = googleVisionService.extractText(inputStream, documentResponse);
-                if (ApplicationConstants.CONVERSION_SUCCESS.equals(visionResponse.getStatus())) {
-                    log.info("Google Vision fallback successful for document: {}", documentResponse.getDocumentId());
-                    return visionResponse;
-                }
-            } catch (Exception e) {
-                log.warn("Google Vision fallback failed for document {}: {}",
-                        documentResponse.getDocumentId(), e.getMessage());
-                // Continue with Tika result
-            }
-        }
-
         // Build metadata for Tika OCR result
         ConversionMetadata conversionMetadata = ConversionMetadata.builder()
-                .ocrConfidence(tikaConfidence)
+                .ocrConfidence(90)
                 .usedOcrFallback(true)
                 .processingNotes("OCR processing with Tika")
                 .build();
@@ -198,35 +175,6 @@ public class TikaTextExtractor {
                 .metadata(conversionMetadata)
                 .processingTimeMs(System.currentTimeMillis() - startTime)
                 .build();
-    }
-
-    /**
-     * Calculate simple confidence score based on text characteristics
-     * Always enabled - provides consistent confidence scoring
-     */
-    private int calculateSimpleConfidence(String extractedText) {
-        if (extractedText == null || extractedText.trim().isEmpty()) {
-            return 0;
-        }
-
-        // Simple heuristic: ratio of alphanumeric characters to total characters
-        long alphanumericCount = extractedText.chars()
-                .filter(Character::isLetterOrDigit)
-                .count();
-
-        if (extractedText.length() == 0) {
-            return 0;
-        }
-
-        double ratio = (double) alphanumericCount / extractedText.length();
-        int confidence = Math.min(100, (int) (ratio * 100));
-
-        // Boost confidence if text seems well-structured
-        if (extractedText.contains(" ") && extractedText.length() > 50) {
-            confidence = Math.min(100, confidence + 10);
-        }
-
-        return Math.max(confidence, ocrConfidenceThreshold);
     }
 
     /**

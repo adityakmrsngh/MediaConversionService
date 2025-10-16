@@ -51,9 +51,7 @@ public class ApplicationConstants {
     
     // Processing strategy constants
     public static final String PROCESSING_TEXT_ONLY = "TEXT_ONLY";
-    public static final String PROCESSING_OCR_ONLY = "OCR_ONLY";
-    public static final String PROCESSING_OCR_WITH_VISION_FALLBACK = "OCR_WITH_VISION_FALLBACK";
-    public static final String PROCESSING_TEXT_WITH_OCR_FALLBACK = "TEXT_WITH_OCR_FALLBACK";
+    public static final String PROCESSING_OCR = "PROCESSING_OCR";
     
     // Text-based MIME types (no OCR needed)
     public static final String[] TEXT_BASED_MIME_TYPES = {
@@ -70,15 +68,4 @@ public class ApplicationConstants {
         MIME_TYPE_XML,
         MIME_TYPE_APP_XML
     };
-    
-    // Image MIME types (OCR required)
-    public static final String[] IMAGE_MIME_TYPES = {
-        MIME_TYPE_JPEG,
-        MIME_TYPE_PNG,
-        MIME_TYPE_TIFF,
-        MIME_TYPE_BMP
-    };
-    
-    // Google Vision fallback threshold
-    public static final int DEFAULT_GOOGLE_VISION_THRESHOLD = 75;
 }

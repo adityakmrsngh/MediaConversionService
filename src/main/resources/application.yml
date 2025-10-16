@@ -27,12 +27,10 @@ tika:
     max-file-size-mb: 5  # Maximum file size for OCR processing
     enable-image-preprocessing: true
     render-dpi: 300
-    ocr-strategy: "OCR_AND_TEXT_EXTRACTION"
     extract-inline-images: true
     write-limit: 100000
   file:
     max-size-mb: 5  # Maximum file size for processing
-    temp-dir: "/tmp/conversion"  # Temporary directory for file processing
 
 # Google Vision API Configuration
 google:

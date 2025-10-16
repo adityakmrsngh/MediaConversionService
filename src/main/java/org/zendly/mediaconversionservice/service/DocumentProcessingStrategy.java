@@ -33,16 +33,10 @@ public class DocumentProcessingStrategy {
             return ApplicationConstants.PROCESSING_TEXT_ONLY;
         }
         
-        // ALL PDFs default to TEXT_ONLY (fast path) - no complex analysis
-        if (isPdfDocument(normalizedMimeType)) {
-            log.info("PDF {} defaulting to TEXT_ONLY strategy (fast path)", mimeType);
-            return ApplicationConstants.PROCESSING_TEXT_ONLY;
-        }
-        
         // Images use OCR with Vision fallback
-        if (isImageDocument(normalizedMimeType)) {
-            log.info("Image {} identified, using OCR_WITH_VISION_FALLBACK strategy", mimeType);
-            return ApplicationConstants.PROCESSING_OCR_WITH_VISION_FALLBACK;
+        if (isPdfDocument(normalizedMimeType)) {
+            log.info("Image {} identified, using PROCESSING_OCR strategy", mimeType);
+            return ApplicationConstants.PROCESSING_OCR;
         }
         
         // Safe default for unknown types
@@ -56,14 +50,6 @@ public class DocumentProcessingStrategy {
     public boolean isTextBasedDocument(String mimeType) {
         return Arrays.asList(ApplicationConstants.TEXT_BASED_MIME_TYPES).contains(mimeType);
     }
-
-    /**
-     * Check if document is an image (OCR required)
-     */
-    public boolean isImageDocument(String mimeType) {
-        return Arrays.asList(ApplicationConstants.IMAGE_MIME_TYPES).contains(mimeType);
-    }
-
     /**
      * Check if document is PDF
      */

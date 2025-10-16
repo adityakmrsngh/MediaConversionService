@@ -21,7 +21,10 @@ public class GoogleVisionService {
      * Extract text using Google Vision API (stub implementation)
      * TODO: Implement actual Google Vision API integration
      */
-    public ConversionResponse extractText(InputStream inputStream, DocumentResponse documentResponse) {
+    public ConversionResponse convertImage(DocumentResponse documentResponse) {
+        return null;
+    }
+    private ConversionResponse extractText(InputStream inputStream, DocumentResponse documentResponse) {
         long startTime = System.currentTimeMillis();
         
         log.info("Google Vision fallback requested for document: {}", documentResponse.getDocumentId());
@@ -50,4 +53,6 @@ public class GoogleVisionService {
                 .processingTimeMs(System.currentTimeMillis() - startTime)
                 .build();
     }
+
+
 }

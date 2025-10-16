@@ -110,28 +110,9 @@ public class TikaOcrConfig {
     @Bean
     public PDFParserConfig createPDFParserConfig() {
         PDFParserConfig config = new PDFParserConfig();
-
-        // Set OCR strategy based on configuration
-        switch (getOcrStrategy().toUpperCase()) {
-            case "NO_OCR":
-                config.setOcrStrategy(PDFParserConfig.OCR_STRATEGY.NO_OCR);
-                break;
-            case "OCR_ONLY":
-                config.setOcrStrategy(PDFParserConfig.OCR_STRATEGY.OCR_ONLY);
-                break;
-            case "OCR_AND_TEXT_EXTRACTION":
-                config.setOcrStrategy(PDFParserConfig.OCR_STRATEGY.OCR_AND_TEXT_EXTRACTION);
-                break;
-            case "AUTO":
-                config.setOcrStrategy(PDFParserConfig.OCR_STRATEGY.AUTO);
-                break;
-            default:
-                config.setOcrStrategy(PDFParserConfig.OCR_STRATEGY.OCR_AND_TEXT_EXTRACTION);
-        }
-
+        config.setOcrStrategy(PDFParserConfig.OCR_STRATEGY.AUTO);
         config.setExtractInlineImages(isExtractInlineImages());
         config.setOcrDPI(getRenderDpi());
-
         return config;
     }
 

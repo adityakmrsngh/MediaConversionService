@@ -22,14 +22,17 @@ public class DocumentConversionService {
 
     private final TikaTextExtractor tikaTextExtractor;
     private final AudioConversionService audioConversionService;
+    private final GoogleVisionService googleVisionService;
 
     @Value("${tika.file.max-size-mb}")
     private int maxFileSizeMb;
 
     public DocumentConversionService(TikaTextExtractor tikaTextExtractor,
-                                   AudioConversionService audioConversionService) {
+                                     AudioConversionService audioConversionService,
+                                     GoogleVisionService googleVisionService) {
         this.tikaTextExtractor = tikaTextExtractor;
         this.audioConversionService = audioConversionService;
+        this.googleVisionService = googleVisionService;
     }
 
     /**
@@ -52,7 +55,8 @@ public class DocumentConversionService {
             // Simple, direct routing based on document type
             ConversionResponse response = switch (documentResponse.getDocumentType()) {
                 case AUDIO -> audioConversionService.convertAudio(documentResponse);
-                case DOCUMENT, IMAGE -> tikaTextExtractor.convertWithTika(documentResponse, startTime);
+                case DOCUMENT -> tikaTextExtractor.convertWithTika(documentResponse, startTime);
+                case IMAGE -> googleVisionService.convertImage(documentResponse);
                 default -> buildErrorResponse(documentResponse.getDocumentId(), 
                         ApplicationConstants.ERROR_UNSUPPORTED_FORMAT, startTime);
             };
