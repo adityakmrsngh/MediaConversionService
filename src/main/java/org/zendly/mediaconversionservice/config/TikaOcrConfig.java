@@ -1,7 +1,13 @@
 package org.zendly.mediaconversionservice.config;
 
 import lombok.Data;
+import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.ocr.TesseractOCRConfig;
+import org.apache.tika.parser.pdf.PDFParserConfig;
+import org.apache.tika.sax.BodyContentHandler;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -65,4 +71,72 @@ public class TikaOcrConfig {
     private boolean extractInlineImages = true;
 
     private Integer writeLimit = 100000;
+
+    @Bean
+    public AutoDetectParser getAutoDetectParser() {
+        return new AutoDetectParser();
+    }
+
+    @Bean
+    public ParseContext createParseContext(PDFParserConfig pdfParserConfig,
+                                           TesseractOCRConfig tesseractOCRConfig) {
+        ParseContext context = new ParseContext();
+        context.set(TesseractOCRConfig.class, tesseractOCRConfig);
+        context.set(PDFParserConfig.class, pdfParserConfig);
+        return context;
+    }
+
+    @Bean
+    public TesseractOCRConfig createTesseractOCRConfig() {
+        TesseractOCRConfig config = new TesseractOCRConfig();
+
+        if (isEnabled()) {
+            config.setLanguage(getLanguage());
+            config.setPageSegMode(String.valueOf(getPageSegmentationMode()));
+            config.setTimeoutSeconds(getTimeoutSeconds());
+            config.setMaxFileSizeToOcr(getMaxFileSizeMb() * 1024L * 1024L);
+            config.setDensity(getRenderDpi());
+            config.setEnableImagePreprocessing(isEnableImagePreprocessing());
+        } else {
+            config.setSkipOcr(true);
+        }
+
+        return config;
+    }
+
+    /**
+     * Create PDFParserConfig from application properties
+     */
+    @Bean
+    public PDFParserConfig createPDFParserConfig() {
+        PDFParserConfig config = new PDFParserConfig();
+
+        // Set OCR strategy based on configuration
+        switch (getOcrStrategy().toUpperCase()) {
+            case "NO_OCR":
+                config.setOcrStrategy(PDFParserConfig.OCR_STRATEGY.NO_OCR);
+                break;
+            case "OCR_ONLY":
+                config.setOcrStrategy(PDFParserConfig.OCR_STRATEGY.OCR_ONLY);
+                break;
+            case "OCR_AND_TEXT_EXTRACTION":
+                config.setOcrStrategy(PDFParserConfig.OCR_STRATEGY.OCR_AND_TEXT_EXTRACTION);
+                break;
+            case "AUTO":
+                config.setOcrStrategy(PDFParserConfig.OCR_STRATEGY.AUTO);
+                break;
+            default:
+                config.setOcrStrategy(PDFParserConfig.OCR_STRATEGY.OCR_AND_TEXT_EXTRACTION);
+        }
+
+        config.setExtractInlineImages(isExtractInlineImages());
+        config.setOcrDPI(getRenderDpi());
+
+        return config;
+    }
+
+    @Bean
+    public BodyContentHandler getBodyContentHandler() {
+        return new BodyContentHandler(getWriteLimit()); // 100KB limit
+    }
 }

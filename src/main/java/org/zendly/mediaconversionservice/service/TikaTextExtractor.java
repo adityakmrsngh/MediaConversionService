@@ -5,12 +5,10 @@ import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
-import org.apache.tika.parser.ocr.TesseractOCRConfig;
-import org.apache.tika.parser.pdf.PDFParserConfig;
 import org.apache.tika.sax.BodyContentHandler;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
-import org.zendly.mediaconversionservice.config.TikaOcrConfig;
 import org.zendly.mediaconversionservice.constants.ApplicationConstants;
 import org.zendly.mediaconversionservice.dto.ConversionMetadata;
 import org.zendly.mediaconversionservice.dto.ConversionResponse;
@@ -25,19 +23,21 @@ import java.io.InputStream;
 @Slf4j
 @Service
 public class TikaTextExtractor {
+    @Value("${tika.ocr.confidence-threshold}")
+    private int ocrConfidenceThreshold;
+    @Value("${tika.ocr.language}")
+    private String ocrLanguage;
 
-    private final TikaOcrConfig tikaOcrConfig;
     private final AutoDetectParser autoDetectParser;
     private final ParseContext parseContext;
-    private final TesseractOCRConfig tesseractOCRConfig;
-    private final PDFParserConfig pdfParserConfig;
+    private final BodyContentHandler bodyContentHandler;
 
-    public TikaTextExtractor(TikaOcrConfig tikaOcrConfig) {
-        this.tikaOcrConfig = tikaOcrConfig;
-        this.autoDetectParser = new AutoDetectParser();
-        this.parseContext = createParseContext();
-        this.tesseractOCRConfig = createTesseractOCRConfig();
-        this.pdfParserConfig = createPDFParserConfig();
+    public TikaTextExtractor(AutoDetectParser autoDetectParser,
+                             ParseContext parseContext,
+                             BodyContentHandler bodyContentHandler) {
+        this.autoDetectParser = autoDetectParser;
+        this.parseContext = parseContext;
+        this.bodyContentHandler = bodyContentHandler;
     }
 
     /**
@@ -51,11 +51,10 @@ public class TikaTextExtractor {
         try {
             // Use Tika with metadata extraction and OCR configuration
             Metadata metadata = new Metadata();
-            BodyContentHandler handler = new BodyContentHandler(tikaOcrConfig.getWriteLimit()); // 100KB limit
-            
+
             // Parse document with OCR-enabled context
-            autoDetectParser.parse(inputStream, handler, metadata, parseContext);
-            String extractedText = handler.toString();
+            autoDetectParser.parse(inputStream, bodyContentHandler, metadata, parseContext);
+            String extractedText = bodyContentHandler.toString();
 
             // Calculate OCR confidence if OCR was used
             int ocrConfidence = calculateOcrConfidence(metadata, extractedText);
@@ -72,7 +71,7 @@ public class TikaTextExtractor {
                     .fileSizeBytes(getFileSizeFromMetadata(metadata))
                     .pageCount(getPageCountFromMetadata(metadata))
                     .ocrConfidence(ocrConfidence)
-                    .language(tikaOcrConfig.getLanguage())
+                    .language(ocrLanguage)
                     .usedOcrFallback(usedOcr)
                     .processingNotes("Extracted using Apache Tika 3.0 with OCR support")
                     .build();
@@ -140,66 +139,6 @@ public class TikaTextExtractor {
     }
 
     /**
-     * Create ParseContext with OCR and PDF configurations
-     */
-    private ParseContext createParseContext() {
-        ParseContext context = new ParseContext();
-        context.set(TesseractOCRConfig.class, tesseractOCRConfig);
-        context.set(PDFParserConfig.class, pdfParserConfig);
-        return context;
-    }
-
-    /**
-     * Create TesseractOCRConfig from application properties
-     */
-    private TesseractOCRConfig createTesseractOCRConfig() {
-        TesseractOCRConfig config = new TesseractOCRConfig();
-        
-        if (tikaOcrConfig.isEnabled()) {
-            config.setLanguage(tikaOcrConfig.getLanguage());
-            config.setPageSegMode(String.valueOf(tikaOcrConfig.getPageSegmentationMode()));
-            config.setTimeoutSeconds(tikaOcrConfig.getTimeoutSeconds());
-            config.setMaxFileSizeToOcr(tikaOcrConfig.getMaxFileSizeMb() * 1024L * 1024L);
-            config.setDensity(tikaOcrConfig.getRenderDpi());
-            config.setEnableImagePreprocessing(tikaOcrConfig.isEnableImagePreprocessing());
-        } else {
-            config.setSkipOcr(true);
-        }
-        
-        return config;
-    }
-
-    /**
-     * Create PDFParserConfig from application properties
-     */
-    private PDFParserConfig createPDFParserConfig() {
-        PDFParserConfig config = new PDFParserConfig();
-        
-        // Set OCR strategy based on configuration
-        switch (tikaOcrConfig.getOcrStrategy().toUpperCase()) {
-            case "NO_OCR":
-                config.setOcrStrategy(PDFParserConfig.OCR_STRATEGY.NO_OCR);
-                break;
-            case "OCR_ONLY":
-                config.setOcrStrategy(PDFParserConfig.OCR_STRATEGY.OCR_ONLY);
-                break;
-            case "OCR_AND_TEXT_EXTRACTION":
-                config.setOcrStrategy(PDFParserConfig.OCR_STRATEGY.OCR_AND_TEXT_EXTRACTION);
-                break;
-            case "AUTO":
-                config.setOcrStrategy(PDFParserConfig.OCR_STRATEGY.AUTO);
-                break;
-            default:
-                config.setOcrStrategy(PDFParserConfig.OCR_STRATEGY.OCR_AND_TEXT_EXTRACTION);
-        }
-        
-        config.setExtractInlineImages(tikaOcrConfig.isExtractInlineImages());
-        config.setOcrDPI(tikaOcrConfig.getRenderDpi());
-        
-        return config;
-    }
-
-    /**
      * Calculate OCR confidence from metadata and extracted text
      */
     private int calculateOcrConfidence(Metadata metadata, String extractedText) {
@@ -235,7 +174,7 @@ public class TikaTextExtractor {
             confidence = Math.min(100, confidence + 10);
         }
         
-        return Math.max(confidence, tikaOcrConfig.getConfidenceThreshold());
+        return Math.max(confidence, ocrConfidenceThreshold);
     }
 
     /**
