@@ -83,10 +83,14 @@ public class AudioConversionService {
             if (response.getResultsCount() == 0) {
                 return buildErrorResponse(documentId, "No transcription results", startTime);
             }
+            
+            // Extract transcription from alternatives
             StringBuilder transcription = new StringBuilder();
-            response
-                    .getResultsList().forEach(transcription::append);
-            // Extract transcription and confidence
+            response.getResultsList().forEach(result -> {
+                if (result.getAlternativesCount() > 0) {
+                    transcription.append(result.getAlternatives(0).getTranscript());
+                }
+            });
             String extractedText = transcription.toString().trim();
 
             ConversionMetadata metadata = ConversionMetadata.builder()
