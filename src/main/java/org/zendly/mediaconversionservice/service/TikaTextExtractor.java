@@ -77,7 +77,7 @@ public class TikaTextExtractor {
      */
     private ConversionResponse extractText(InputStream inputStream, DocumentResponse documentResponse) {
         long startTime = System.currentTimeMillis();
-        String mimeType = documentResponse.getMimeType();
+        String mimeType = documentResponse.getMimeType().split(";")[0].trim().toLowerCase();
         String strategy = processingStrategy.determineProcessingStrategy(mimeType);
 
         log.info("Processing document: {} (MIME: {}, Strategy: {})",

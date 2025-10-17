@@ -1,5 +1,5 @@
 ###
-GET http://localhost:8080/api/documents/dc4382fe-cebb-4a25-93f7-4c674b64fd79
+GET https://document-converter-service-846084415264.us-east1.run.app/api/documents/5b4f850c-2969-4d89-8901-3c4173bf9a73
 Content-Type: application/json
 X-Tenant-ID: default
 
