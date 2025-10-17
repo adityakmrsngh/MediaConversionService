@@ -27,12 +27,8 @@ import java.net.URL;
 @Service
 public class TikaTextExtractor {
 
-    @Value("${tika.ocr.confidence-threshold}")
-    private int ocrConfidenceThreshold;
     @Value("${tika.ocr.write-limit}")
     private int writeLimit;
-    @Value("${google.vision.confidence-threshold}")
-    private int googleVisionThreshold;
 
     private final AutoDetectParser autoDetectParser;
     private final ParseContext ocrEnabledContext;

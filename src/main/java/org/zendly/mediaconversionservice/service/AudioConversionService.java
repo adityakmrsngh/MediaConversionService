@@ -2,6 +2,7 @@ package org.zendly.mediaconversionservice.service;
 
 import com.google.cloud.speech.v1.*;
 import com.google.protobuf.ByteString;
+import com.rometools.utils.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -82,9 +83,10 @@ public class AudioConversionService {
             if (response.getResultsCount() == 0) {
                 return buildErrorResponse(documentId, "No transcription results", startTime);
             }
-
-            // Extract transcription and confidence
             StringBuilder transcription = new StringBuilder();
+            response
+                    .getResultsList().forEach(transcription::append);
+            // Extract transcription and confidence
             String extractedText = transcription.toString().trim();
 
             ConversionMetadata metadata = ConversionMetadata.builder()
