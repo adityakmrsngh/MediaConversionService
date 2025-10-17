@@ -202,6 +202,18 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-vision</artifactId>
+      <version>3.47.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-speech</artifactId>
+      <version>4.47.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-configuration-processor</artifactId>
       <version>3.5.6</version>
@@ -210,6 +222,7 @@
     </dependency>
   </dependencies>
   <properties>
+    <google-cloud-speech.version>4.47.0</google-cloud-speech.version>
     <http-client>5.4.1</http-client>
     <tika.version>3.2.3</tika.version>
     <java.version>17</java.version>

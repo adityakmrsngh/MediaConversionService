@@ -2,8 +2,8 @@ package org.zendly.mediaconversionservice.config;
 
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.cloud.vision.v1.ImageAnnotatorClient;
-import com.google.cloud.vision.v1.ImageAnnotatorSettings;
+import com.google.cloud.speech.v1.SpeechClient;
+import com.google.cloud.speech.v1.SpeechSettings;
 import jakarta.annotation.PreDestroy;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -16,26 +16,27 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 /**
- * Configuration for Google Cloud Vision API
+ * Configuration for Google Cloud Speech-to-Text API
  */
 @Slf4j
 @Data
 @Configuration
-@ConfigurationProperties(prefix = "google.vision")
-public class GoogleVisionConfig {
+@ConfigurationProperties(prefix = "google.speech")
+public class GoogleSpeechConfig {
 
     private boolean enabled = true;
     private String credentialsPath;
     private int maxFileSizeMb = 5;
-    private int timeoutSeconds = 30;
+    private int timeoutSeconds = 300;
+    private String languageCode = "en-US";
 
-    private ImageAnnotatorClient imageAnnotatorClient;
+    private SpeechClient speechClient;
 
     @Bean
-    @ConditionalOnProperty(name = "google.vision.enabled", havingValue = "true")
-    public ImageAnnotatorClient imageAnnotatorClient() throws IOException {
+    @ConditionalOnProperty(name = "google.speech.enabled", havingValue = "true")
+    public SpeechClient speechClient() throws IOException {
         try {
-            ImageAnnotatorSettings.Builder settingsBuilder = ImageAnnotatorSettings.newBuilder();
+            SpeechSettings.Builder settingsBuilder = SpeechSettings.newBuilder();
 
             // Try credentials path first, fallback to Application Default Credentials
             if (credentialsPath != null && !credentialsPath.isEmpty()) {
@@ -43,30 +44,30 @@ public class GoogleVisionConfig {
                     ServiceAccountCredentials credentials = ServiceAccountCredentials
                             .fromStream(new FileInputStream(credentialsPath));
                     settingsBuilder.setCredentialsProvider(FixedCredentialsProvider.create(credentials));
-                    log.info("Google Vision API initialized with credentials from: {}", credentialsPath);
+                    log.info("Google Speech-to-Text API initialized with credentials from: {}", credentialsPath);
                 } catch (IOException e) {
                     log.warn("Failed to load credentials from path, using Application Default Credentials");
                 }
             } else {
-                log.info("Google Vision API initialized with Application Default Credentials");
+                log.info("Google Speech-to-Text API initialized with Application Default Credentials");
             }
 
-            this.imageAnnotatorClient = ImageAnnotatorClient.create(settingsBuilder.build());
-            return this.imageAnnotatorClient;
+            this.speechClient = SpeechClient.create(settingsBuilder.build());
+            return this.speechClient;
         } catch (IOException e) {
-            log.error("Failed to initialize Google Vision API client: {}", e.getMessage());
+            log.error("Failed to initialize Google Speech-to-Text API client: {}", e.getMessage());
             throw e;
         }
     }
 
     @PreDestroy
     public void cleanup() {
-        if (imageAnnotatorClient != null) {
+        if (speechClient != null) {
             try {
-                imageAnnotatorClient.close();
-                log.info("Google Vision API client closed successfully");
+                speechClient.close();
+                log.info("Google Speech-to-Text API client closed successfully");
             } catch (Exception e) {
-                log.error("Error closing Google Vision API client: {}", e.getMessage());
+                log.error("Error closing Google Speech-to-Text API client: {}", e.getMessage());
             }
         }
     }

@@ -19,6 +19,7 @@
         <http-client>5.4.1</http-client>
         <tika.version>3.2.3</tika.version>
         <google-cloud-vision.version>3.47.0</google-cloud-vision.version>
+        <google-cloud-speech.version>4.47.0</google-cloud-speech.version>
     </properties>
     <dependencies>
         <dependency>
@@ -72,14 +73,19 @@
             <version>${tika.version}</version>
         </dependency>
 
-        <!-- Google Cloud Vision API for fallback OCR - Temporarily disabled for testing -->
-        <!--
+        <!-- Google Cloud Vision API -->
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-vision</artifactId>
             <version>${google-cloud-vision.version}</version>
         </dependency>
-        -->
+
+        <!-- Google Cloud Speech-to-Text API -->
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-speech</artifactId>
+            <version>${google-cloud-speech.version}</version>
+        </dependency>
 
         <!-- Spring Boot Configuration Processor for type-safe configuration -->
         <dependency>

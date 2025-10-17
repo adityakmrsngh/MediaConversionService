@@ -127,7 +127,6 @@ public class TikaTextExtractor {
 
         // Build simplified metadata for text-only processing
         ConversionMetadata conversionMetadata = ConversionMetadata.builder()
-                .ocrConfidence(95) // High confidence for text-only extraction
                 .usedOcrFallback(false)
                 .processingNotes("Text extraction only (no OCR)")
                 .build();
@@ -157,7 +156,6 @@ public class TikaTextExtractor {
         String extractedText = handler.toString();
         // Build metadata for Tika OCR result
         ConversionMetadata conversionMetadata = ConversionMetadata.builder()
-                .ocrConfidence(90)
                 .usedOcrFallback(true)
                 .processingNotes("OCR processing with Tika")
                 .build();

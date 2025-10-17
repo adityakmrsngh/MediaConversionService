@@ -30,11 +30,6 @@ public class ConversionMetadata {
     private DocumentType documentType;
     
     /**
-     * OCR confidence score (0-100) if OCR was used
-     */
-    private Integer ocrConfidence;
-    
-    /**
      * Language detected/used for OCR
      */
     private String language;

@@ -32,18 +32,20 @@ tika:
   file:
     max-size-mb: 5  # Maximum file size for processing
 
-# Google Vision API Configuration
+# Google Cloud API Configuration
 google:
   vision:
     enabled: true
-    confidence-threshold: 85  # Use Google Vision if Tika confidence < 85%
-    project-id: ${GOOGLE_CLOUD_PROJECT_ID:}
     credentials-path: ${GOOGLE_APPLICATION_CREDENTIALS:}
     max-file-size-mb: 5
     timeout-seconds: 30
-    language-hints: ["en", "es"]
-    enable-text-detection: true
-    enable-document-text-detection: true
+    
+  speech:
+    enabled: true
+    credentials-path: ${GOOGLE_APPLICATION_CREDENTIALS:}
+    max-file-size-mb: 5
+    timeout-seconds: 300
+    language-code: "en-US"
 
 # Legacy conversion settings (for backward compatibility)
 conversion:
@@ -57,4 +59,3 @@ tenant:
     ttl-minutes: 30
     max-size: 1000
     refresh-ahead-factor: 0.8
-
