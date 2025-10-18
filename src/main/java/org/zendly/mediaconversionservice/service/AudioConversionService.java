@@ -2,7 +2,6 @@ package org.zendly.mediaconversionservice.service;
 
 import com.google.cloud.speech.v1.*;
 import com.google.protobuf.ByteString;
-import com.rometools.utils.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -14,7 +13,7 @@ import org.zendly.mediaconversionservice.dto.DocumentResponse;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.List;
+
 
 /**
  * Google Speech-to-Text API service for audio transcription
@@ -71,6 +70,7 @@ public class AudioConversionService {
                     .setEncoding(encoding)
                     .setLanguageCode(languageCode)
                     .setEnableAutomaticPunctuation(true)
+                    .setSampleRateHertz(detectSampleRate(documentResponse.getMimeType()))
                     .build();
 
             RecognitionAudio audio = RecognitionAudio.newBuilder()
@@ -129,6 +129,13 @@ public class AudioConversionService {
             case ApplicationConstants.MIME_TYPE_OGG -> RecognitionConfig.AudioEncoding.OGG_OPUS;
             case ApplicationConstants.MIME_TYPE_AMR -> RecognitionConfig.AudioEncoding.AMR;
             default -> RecognitionConfig.AudioEncoding.ENCODING_UNSPECIFIED;
+        };
+    }
+
+    private static int detectSampleRate(String mimeType) {
+        return switch (mimeType) {
+            case ApplicationConstants.MIME_TYPE_AMR -> 8000;          // AMR narrowband
+            default -> 16000;                                         // All others: standard speech rate
         };
     }
 
