@@ -20,23 +20,26 @@ public class ApplicationConstants {
     public static final String MIME_TYPE_PPT = "application/vnd.ms-powerpoint";
     public static final String MIME_TYPE_PPTX = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
     public static final String MIME_TYPE_TXT = "text/plain";
+    public static final String MIME_TYPE_CSV = "text/csv";
     public static final String MIME_TYPE_RTF = "application/rtf";
     public static final String MIME_TYPE_JSON = "application/json";
     public static final String MIME_TYPE_HTML = "text/html";
     public static final String MIME_TYPE_XML = "text/xml";
     public static final String MIME_TYPE_APP_XML = "application/xml";
-    
+    public static final String MIME_TYPE_OPEN_PRESENTATION="application/vnd.oasis.opendocument.presentation";
+    public static final String MIME_TYPE_OPEN_SPREADSHEET="application/vnd.oasis.opendocument.spreadsheet";
+    public static final String MIME_TYPE_OPEN_TEXT="application/vnd.oasis.opendocument.text";
+    public static final String MIME_TYPE_ZIP="application/zip";
     // Audio MIME types (for future implementation)
+
     public static final String MIME_TYPE_MP3 = "audio/mpeg";
     public static final String MIME_TYPE_WAV = "audio/wav";
     public static final String MIME_TYPE_M4A = "audio/mp4";
     public static final String MIME_TYPE_FLAC = "audio/flac";
-    
-    // Image MIME types (for future implementation)
-    public static final String MIME_TYPE_JPEG = "image/jpeg";
-    public static final String MIME_TYPE_PNG = "image/png";
-    public static final String MIME_TYPE_TIFF = "image/tiff";
-    public static final String MIME_TYPE_BMP = "image/bmp";
+    public static final String MIME_TYPE_ACC = "audio/aac";
+    public static final String MIME_TYPE_OGG = "audio/ogg";
+    public static final String MIME_TYPE_AMR = "audio/amr";
+
     
     // Conversion methods
     public static final String METHOD_TIKA = "APACHE_TIKA";
@@ -66,6 +69,11 @@ public class ApplicationConstants {
         MIME_TYPE_JSON,
         MIME_TYPE_HTML,
         MIME_TYPE_XML,
-        MIME_TYPE_APP_XML
+        MIME_TYPE_APP_XML,
+            MIME_TYPE_CSV,
+            MIME_TYPE_OPEN_PRESENTATION,
+            MIME_TYPE_OPEN_SPREADSHEET,
+            MIME_TYPE_OPEN_TEXT,
+            MIME_TYPE_ZIP
     };
 }

@@ -125,6 +125,9 @@ public class AudioConversionService {
             case ApplicationConstants.MIME_TYPE_WAV -> RecognitionConfig.AudioEncoding.LINEAR16;
             case ApplicationConstants.MIME_TYPE_FLAC -> RecognitionConfig.AudioEncoding.FLAC;
             case ApplicationConstants.MIME_TYPE_M4A -> RecognitionConfig.AudioEncoding.MP3;
+            case ApplicationConstants.MIME_TYPE_ACC -> RecognitionConfig.AudioEncoding.MP3;
+            case ApplicationConstants.MIME_TYPE_OGG -> RecognitionConfig.AudioEncoding.OGG_OPUS;
+            case ApplicationConstants.MIME_TYPE_AMR -> RecognitionConfig.AudioEncoding.AMR;
             default -> RecognitionConfig.AudioEncoding.ENCODING_UNSPECIFIED;
         };
     }
